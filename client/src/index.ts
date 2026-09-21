@@ -124,6 +124,19 @@ const parseCustomConfig = (value: string, previous: JsonObject | undefined): Jso
     return { ...previous, ...json };
 };
 
+const parseInputVariables = (value: string, previous: JsonObject | undefined): JsonObject => {
+    let json;
+    try {
+        json = JSON.parse(value);
+    } catch(err) {
+        throw new InvalidArgumentError(`Not valid JSON: ${err instanceof Error ? err.message : ''}`);
+    }
+    if(!isJsonObject(json)) {
+        throw new InvalidArgumentError('Not a valid JSON Object');
+    }
+    return { ...previous, ...json };
+};
+
 const parseSessionCount = (value: string) => {
     const tmp = parseInt(value, 10);
     if(isNaN(tmp) || (tmp < 0) || (tmp > 1024)) {
@@ -172,6 +185,7 @@ type CmdOptions = {
     apiKey?: string;
     clientSecret?: Uint8Array;
     customConfig?: JsonObject;
+    inputVariables?: JsonObject;
     language?: string;
     supportedLanguages?: boolean;
     sessionCount?: number;
@@ -191,6 +205,7 @@ new Command()
     .option('--api-key <apikey>', 'API Key value', parseApiKey)
     .option('--client-secret <base64>', 'Client secret for message signature', parseClientSecret)
     .option('--custom-config <json>', 'Stringified JSON object to be passed as "customConfig" parameter in \'open\' message', parseCustomConfig)
+    .option('--input-variables <json>', 'Stringified JSON object to be passed as "inputVariables" parameter in \'open\' message', parseInputVariables)
     .option('--language <language>', 'Provides the language code used to test the call.')
     .option('--supported-languages', 'Fetches the list of supported languages')
     .option('--session-count <number>', 'Number of concurrent sessions to establish to server. Default: 1', parseSessionCount)
@@ -258,6 +273,7 @@ new Command()
                     dnis: '+1-800-555-6789',
                 },
                 customConfigParam: options.customConfig,
+                inputVariablesParam: options.inputVariables,
                 languageParam: options.language ?? undefined,
                 supportedLanguages: options.supportedLanguages ?? undefined,
                 createWebSocket: createClientWebSocket,

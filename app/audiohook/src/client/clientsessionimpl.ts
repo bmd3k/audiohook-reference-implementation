@@ -107,6 +107,7 @@ export type PartialOpenParameters = {
     participant?: Participant;
     media: MediaParameters;
     customConfig?: JsonObject;
+    inputVariables?: JsonObject;
     language?: LanguageCode;
     supportedLanguages?: boolean;
 };
@@ -122,6 +123,7 @@ export type ClientSessionOptions = {
     conversationId?: Uuid;
     participant?: Participant;
     customConfigParam?: JsonObject;
+    inputVariablesParam?: JsonObject;
     languageParam?: LanguageCode;
     supportedLanguages?: boolean;
     createWebSocket: ClientWebSocketFactory;
@@ -478,6 +480,7 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
                 participant: this.options.participant,
                 media: this.mediaSource.offeredMedia,
                 customConfig: this.options.customConfigParam,
+                inputVariables: this.options.inputVariablesParam,
                 language: this.options.languageParam,
                 supportedLanguages: this.options.supportedLanguages
             });
@@ -503,6 +506,7 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
                 },
                 media: this.mediaSource.offeredMedia,
                 customConfig: this.options.customConfigParam,
+                inputVariables: this.options.inputVariablesParam,
                 language: this.options.languageParam,
                 supportedLanguages: this.options.supportedLanguages
             });

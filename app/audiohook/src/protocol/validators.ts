@@ -308,7 +308,8 @@ export const isOpenParameters = makeValidator<OpenParameters>(
         language: isLanguageCode,
         supportedLanguages: isBoolean,
         continuedSessions: isContinuedSessions,
-        customConfig: isJsonObject
+        customConfig: isJsonObject,
+        inputVariables: isJsonObject
     }
 );
 

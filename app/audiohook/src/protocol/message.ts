@@ -103,6 +103,7 @@ export type OpenParameters = {
     supportedLanguages?: boolean;
     continuedSessions?: ContinuedSessions;
     customConfig?: JsonObject;
+    inputVariables?: JsonObject;
 };
 
 export type OpenedParameters = {
