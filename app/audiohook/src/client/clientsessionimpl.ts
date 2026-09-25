@@ -91,6 +91,7 @@ export type AuthInfo = {
 
 export type ClientWebSocketOptions = {
     uri: string;
+    connectHost?: string;
     organizationId: string;
     sessionId: string;
     correlationId: string;
@@ -116,6 +117,7 @@ export type OpenParameterProvider = (session: ClientSession, openParams: Partial
 
 export type ClientSessionOptions = {
     uri: string;
+    connectHost?: string;
     mediaSource: MediaSource;
     organizationId: Uuid;
     sessionId?: Uuid;
@@ -192,6 +194,7 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
         this.transcripts = [];
         const ws = this.options.createWebSocket({
             uri: options.uri,
+            connectHost: options.connectHost,
             organizationId: this.organizationId,
             sessionId: this.id,
             correlationId: this.options.correlationId ?? uuid(),

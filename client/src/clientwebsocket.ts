@@ -1,12 +1,16 @@
+import { ClientRequestArgs } from 'http';
+import net from 'net';
+import tls from 'tls';
 import { URL } from 'url';
-import { WebSocket } from 'ws';
+import { ClientOptions, WebSocket } from 'ws';
 import { ClientWebSocketFactory, httpsignature } from '../../app/audiohook';
 
 export const createClientWebSocket: ClientWebSocketFactory = ({
-    uri, 
-    organizationId, 
-    sessionId, 
-    correlationId, 
+    uri,
+    connectHost,
+    organizationId,
+    sessionId,
+    correlationId,
     authInfo,
     logger,
 }) => {
@@ -33,12 +37,31 @@ export const createClientWebSocket: ClientWebSocketFactory = ({
     };
     logger.info(`Request headers: ${JSON.stringify(requestHeaders, null, 1)}`);
 
-    return new WebSocket(
-        uri,
-        {
-            followRedirects: false,
-            headers: requestHeaders
-        }
-    );
+    const wsOptions: ClientOptions & ClientRequestArgs = {
+        followRedirects: false,
+        headers: requestHeaders,
+    };
+
+    if(connectHost) {
+        logger.info(`Connecting to ${uri} via ${connectHost}`);
+        const isSecure = url.protocol === 'wss:' || url.protocol === 'https:';
+        const canonicalHost = url.hostname.startsWith('[') ? url.hostname.slice(1, -1) : url.hostname;
+        const port = url.port ? parseInt(url.port, 10) : (isSecure ? 443 : 80);
+        wsOptions.createConnection = () => {
+            if(isSecure) {
+                return tls.connect({
+                    port,
+                    host: connectHost,
+                    servername: net.isIP(canonicalHost) ? '' : canonicalHost,
+                });
+            }
+            return net.connect({
+                port,
+                host: connectHost,
+            });
+        };
+    }
+
+    return new WebSocket(uri, wsOptions);
 };
 

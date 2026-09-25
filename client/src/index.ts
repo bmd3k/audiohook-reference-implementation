@@ -189,6 +189,7 @@ const parseTimeoutSeconds = (value: string): number => {
 
 type CmdOptions = {
     uri?: string;
+    connectHost?: string;
     wavfile?: string;
     apiKey?: string;
     clientSecret?: Uint8Array;
@@ -212,6 +213,7 @@ new Command()
     .showHelpAfterError()
     .argument('[serveruri]', 'URI (wss://) of AudioHook server.')
     .option('--uri <uri>', 'URI (wss://) of AudioHook server.')
+    .option('--connect-host <host>', 'Host to open the TCP connection to, instead of the host in the URI. The URI host is still used for the TLS handshake and the Host header.')
     .option('--wavfile <wavfile>', 'Filename of the WAV file to send')
     .option('--api-key <apikey>', 'API Key value', parseApiKey)
     .option('--client-secret <base64>', 'Client secret for message signature', parseClientSecret)
@@ -271,6 +273,7 @@ new Command()
             }
             const session = createClientSession({
                 uri,
+                connectHost: options.connectHost,
                 mediaSource,
                 organizationId,
                 sessionId,
