@@ -26,7 +26,7 @@ const logger = pino({
             colorize: true,
             ignore: 'pid,hostname'
         }
-    }
+    },
 });
 
 const logLevels = ['fatal', 'error', 'warn', 'info', 'debug', 'trace'] as const;
@@ -71,7 +71,7 @@ RTT digest:\n\
 setInterval(
     () => {
         printRttDigest();
-    }, 
+    },
     30000
 );
 
@@ -179,6 +179,14 @@ const checkLogLevels = (value: string): LogLevel => {
     return tmp as LogLevel;
 };
 
+const parseTimeoutSeconds = (value: string): number => {
+    const tmp = parseFloat(value);
+    if(isNaN(tmp) || tmp <= 0) {
+        throw new InvalidArgumentError('Timeout must be a positive number of seconds');
+    }
+    return Math.round(tmp * 1000);
+};
+
 type CmdOptions = {
     uri?: string;
     wavfile?: string;
@@ -190,6 +198,9 @@ type CmdOptions = {
     supportedLanguages?: boolean;
     sessionCount?: number;
     maxStreamDuration?: StreamDuration;
+    openTimeout?: number;
+    closeTimeout?: number;
+    pingInterval?: number;
     connectionProbe?: boolean;
     orgid?: string;
     connectionRate: number;
@@ -211,6 +222,9 @@ new Command()
     .option('--session-count <number>', 'Number of concurrent sessions to establish to server. Default: 1', parseSessionCount)
     .option('--max-stream-duration <duration>', 'Limit duration of audio stream to specified number of seconds or as PTxS. Default: length of source', parseStreamDuration)
     .option('--connection-probe', 'Perform a connection probe as documented in protocol specification. No audio is sent unless \'max-stream-duration parameter\' provided.')
+    .option('--open-timeout <seconds>', 'Timeout in seconds waiting for server response to open. Default: 5', parseTimeoutSeconds)
+    .option('--close-timeout <seconds>', 'Timeout in seconds waiting for close transaction. Default: 10', parseTimeoutSeconds)
+    .option('--ping-interval <seconds>', 'Interval in seconds between ping messages and pong response timeout. Default: 5', parseTimeoutSeconds)
     .option('--orgid <uuid>', 'Organization/tenant identifier UUID. Default: Unique random', parseOrgid)
     .option('--connection-rate <number>', 'Average rate at which sessions are created in connections per second. Valid range: 0.1 to 10000, Default: 50', parseConnectionRate, 50)
     .option('--session-log-level <level>', 'Logging level for per-session messages. Default: \'info\'', checkLogLevels, 'info')
@@ -260,6 +274,10 @@ new Command()
                 mediaSource,
                 organizationId,
                 sessionId,
+                openTimeout: options.openTimeout,
+                closeTimeout: options.closeTimeout,
+                pingInterval: options.pingInterval,
+                initialPingDelay: options.pingInterval,
                 conversationId: connectionProbe ? '00000000-0000-0000-0000-000000000000' : uuid(),
                 participant: connectionProbe ? {
                     id: '00000000-0000-0000-0000-000000000000',

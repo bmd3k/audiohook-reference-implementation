@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { EventEmitter } from 'stream';
 import { v4 as uuid } from 'uuid';
-import { 
+import {
     isPromise,
     Logger,
     MaybePromise,
@@ -63,16 +63,16 @@ import {
     Duration,
 } from '../protocol/core';
 import '../protocol/entities-transcript';
- 
+
 /**
- * Interface of methods the AudioHook ClientSession implementation requires from the WebSocket connection 
+ * Interface of methods the AudioHook ClientSession implementation requires from the WebSocket connection
  */
 export interface ClientWebSocket {
     readonly readyState: 0 | 1 | 2 | 3;
     readonly CONNECTING: 0;
     readonly OPEN: 1;
     readonly CLOSING: 2;
-    readonly CLOSED: 3;    
+    readonly CLOSED: 3;
 
     close(): void;
     send(data: string | Uint8Array): void;
@@ -263,7 +263,7 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
         });
         this.mediaSource.on('end', (duration) => {
             this.logger.info(`Source stream ended (duration: ${duration}), closing session.`);
-            this.initiateClose('end'); 
+            this.initiateClose('end');
         });
         this.mediaSource.on('error', (error) => {
             this.logger.error(`Media source signaled error: ${error.stack}`);
@@ -366,10 +366,10 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
     }
 
     buildMessage<
-        Type extends ClientMessageType, 
+        Type extends ClientMessageType,
         Message extends ClientMessage
     >(
-        type: Type, 
+        type: Type,
         parameters: SelectParametersForType<Type, Message>
     ): ClientMessageBase<Type, typeof parameters> {
         return {
@@ -458,6 +458,8 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
         }
         this.state = 'PREPARING';
 
+        debugger;
+
         const sendOpenMessage = (parameters: OpenParameters) => {
             if(this.state == 'PREPARING') {
                 this.openParameters = parameters;
@@ -472,7 +474,7 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
                 }
             }
         };
-        
+
         if(this.options.openParameterProvider) {
             const result = this.options.openParameterProvider(this, {
                 organizationId: this.organizationId,
@@ -514,6 +516,8 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
     }
 
     onWsClose(code: number): void {
+        debugger;
+
         if(this.state === 'CLOSED') {
             this.logger.info(`Websocket close - Code: ${code}`);
         } else {
@@ -524,6 +528,8 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
     }
 
     onTextMessage(data: string): void {
+        debugger;
+
         if (data.length > 65535) {
             return this.signalFatalError(413, 'Message too large');
         }
@@ -542,6 +548,8 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
     }
 
     onBinaryMessage(data: Uint8Array): void {
+        debugger;
+
         this.logger.info(`Websocket binary message. Size: ${data.length}, Data: ${data.slice(0, 512)}`);
         this.signalFatalError(415, 'Unexpected binary message');
     }
@@ -558,7 +566,7 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
         this.messageDispatch[message.type](message as never);
     }
 
-    
+
     onClosedMessage(msg: ClosedMessage): void {
         this.logger.debug(`onClosedMessage - state=${this.state}, Message: ${JSON.stringify(msg, null, 1)}`);
         this.closedMsg = msg;
@@ -591,6 +599,7 @@ class ClientSessionImpl extends EventEmitter implements ClientSession {
     }
 
     onOpenedMessage(msg: OpenedMessage): void {
+        debugger;
         this.logger.debug(`onOpenedMessage - state=${this.state}, Message: ${JSON.stringify(msg, null, 1)}`);
         if (this.state !== 'OPENING') {
             this.sendUnexpectedMessageError(msg);
